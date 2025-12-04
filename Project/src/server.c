@@ -14,7 +14,8 @@ void generateSHA256(const unsigned char *data, unsigned char *hash, size_t len);
 void readAndRespond(int msgid_req, int msgid_res, char* shm_addr);
 
 
-int main() {
+int main() 
+{
     // le chiavi per le code e la memoria condivisa
     // le stessi che genererà anche il client
     key_t key_req;
@@ -39,7 +40,8 @@ int main() {
     shm_addr = createAndGetMemoryAddress(&key_shm, &shmid);
 
     printf("in attesa per le risposte.\n");
-    while (1) {
+    while (1) 
+    {
         // ciclo principale che elabora i dati ricevuti dal client e invia le risposta
         readAndRespond(msgid_req, msgid_res, shm_addr);
     }
@@ -47,6 +49,7 @@ int main() {
     if(shmdt(shm_addr) == -1)
     {
         perror("shmdt fallito.");
+        exit(1);
     }
     deleteSharedMemory(shmid);
     return 0;
@@ -66,7 +69,8 @@ void readAndRespond(int msgid_req, int msgid_res, char* shm_addr)
     unsigned char hash[HASH_LENGTH];
 
     // ricevo la risposta
-    if (msgrcv(msgid_req, &req, sizeof(msg_req) - sizeof(long), 1, 0) == -1) {
+    if (msgrcv(msgid_req, &req, sizeof(msg_req) - sizeof(long), 1, 0) == -1)
+    {
         perror("msgrcv fallita");
         exit(1);
     }
@@ -75,8 +79,9 @@ void readAndRespond(int msgid_req, int msgid_res, char* shm_addr)
             req.client_pid, req.filename, req.file_size);
 
     // controllo se la dimensione del file ricevuta è corretta.
-    if (req.file_size > SHM_SIZE) {
-        fprintf(stderr, "errore, la dimensione del file (%zu) supera SHM_SIZE (%d).\n", 
+    if (req.file_size > SHM_SIZE) 
+    {
+        fprintf(stderr, "errore, la dimensione del file %zu supera SHM_SIZE %d.\n", 
                 req.file_size, SHM_SIZE);
         return;
     }
@@ -89,9 +94,13 @@ void readAndRespond(int msgid_req, int msgid_res, char* shm_addr)
     memcpy(res.hash, hash, HASH_LENGTH);
 
     // invio la risposta
-    if (msgsnd(msgid_res, &res, sizeof(msg_res) - sizeof(long), 0) == -1) {
+    if (msgsnd(msgid_res, &res, sizeof(msg_res) - sizeof(long), 0) == -1) 
+    {
         perror("msgsnd fallita");
-    } else {
-        printf("Hash generato e inviato al client con successo.%d.\n", req.client_pid);
+        exit(1);
+    } 
+    else 
+    {
+        printf("Hash generato e inviato al client con successo. PID: %d.\n", req.client_pid);
     }
 }
